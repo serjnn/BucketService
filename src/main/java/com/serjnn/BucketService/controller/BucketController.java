@@ -1,5 +1,6 @@
 package com.serjnn.BucketService.controller;
 
+import com.serjnn.BucketService.dtos.CompleteProduct;
 import com.serjnn.BucketService.models.Bucket;
 import com.serjnn.BucketService.models.BucketItem;
 import com.serjnn.BucketService.repository.BucketItemRepository;
@@ -7,8 +8,10 @@ import com.serjnn.BucketService.repository.BucketRepository;
 import com.serjnn.BucketService.services.BucketItemService;
 import com.serjnn.BucketService.services.BucketService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -39,13 +42,11 @@ public class BucketController {
         return bucketService.findAll();
     }
 
-//    @GetMapping("/some/{id}")
-//    void some(@PathVariable("id") Long id){
-//       Bucket bucket = bucketService.findById(id);
-//        BucketItem bucketItem = new BucketItem(22L,1);
-//       bucket.getBucketItem().add(bucketItem    );
-//       bucketService.save(bucket);
-//    }
+    @GetMapping("/getCompleteBucket/{clientId}")
+    Mono<List<CompleteProduct>> complete(@PathVariable("clientId") Long clientId){
+        return bucketService.getCompleteProducts(clientId);
+    }
+
 
 
 
