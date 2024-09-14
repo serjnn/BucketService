@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 @Getter
-public class ProductDto {
+public class    ProductDto {
 
 
         private Long id;

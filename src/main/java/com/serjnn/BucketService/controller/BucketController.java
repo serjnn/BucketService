@@ -31,6 +31,11 @@ public class BucketController {
          bucketService.addProduct(clientId,productId);
 
     }
+    @GetMapping("/remove/{clientId}/{productId}")
+    void remove(@PathVariable("clientId") Long clientId, @PathVariable("productId") Long productId){
+        bucketService.removeProductFromBucket(clientId,productId);
+
+    }
 
     @GetMapping("/items/{bucketId}")
       BucketItem get(@PathVariable("bucketId") Long bucketId) {
