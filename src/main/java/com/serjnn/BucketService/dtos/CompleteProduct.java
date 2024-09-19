@@ -4,6 +4,8 @@ package com.serjnn.BucketService.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 @Getter
 @AllArgsConstructor
 public class CompleteProduct {
@@ -15,7 +17,7 @@ public class CompleteProduct {
 
     private String description;
 
-    private int price;
+    private BigDecimal price;
 
     private String category;
 

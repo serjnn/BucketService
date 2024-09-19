@@ -1,20 +1,18 @@
 package com.serjnn.BucketService.services;
 
 import com.serjnn.BucketService.dtos.CompleteProduct;
+import com.serjnn.BucketService.dtos.OrderDTO;
 import com.serjnn.BucketService.dtos.ProductDto;
 import com.serjnn.BucketService.models.Bucket;
 import com.serjnn.BucketService.models.BucketItem;
 import com.serjnn.BucketService.repository.BucketRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -66,7 +64,7 @@ public class BucketService {
 
     private Integer getQuantity(Long id, List<BucketItem> bucketItem) {
         BucketItem bucketItem1 = bucketItem.stream().filter(i -> Objects.equals(i.getProductId(), id)).findFirst().orElse(null);
-        
+
         return bucketItem1 != null ? bucketItem1.getQuantity() : 0;
     }
 
@@ -114,13 +112,6 @@ public class BucketService {
     }
 
 
-    @Transactional
-    public List<Bucket> findAll() {
-        return bucketRepository.findAll();
-    }
-
-
-
     public void removeProductFromBucket(Long clientId, Long productId) {
         Bucket bucket = findBucketByClientId(clientId);
 
@@ -144,4 +135,24 @@ public class BucketService {
 
 
     }
+
+    public void clear(Long clientID) {
+        Bucket bucket = findBucketByClientId(clientID);
+        bucket.getBucketItem().clear();
+        save(bucket);
+    }
+
+
+    public void restore(OrderDTO orderDTO) {
+        Bucket bucket = findBucketByClientId(orderDTO.getClientID());
+        List<BucketItem> bucketItems = orderDTO
+                .getItems()
+                .stream()
+                .map(item -> new BucketItem(item.getId(), item.getQuantity(), bucket))
+                .collect(Collectors.toCollection(ArrayList::new));
+        System.out.println(bucketItems);
+        bucket.getBucketItem().addAll(bucketItems);
+        save(bucket);
+    }
 }
+
