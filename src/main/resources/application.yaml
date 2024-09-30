@@ -1,15 +1,11 @@
 
 spring:
-  datasource:
+  r2dbc:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/bucketService
+    url: r2dbc:postgresql://localhost:5432/bucket
     username: postgres
     password: Vaifery111
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   application:
     name: Bucket
 

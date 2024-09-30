@@ -1,15 +1,14 @@
 package com.serjnn.BucketService.repository;
 
 import com.serjnn.BucketService.models.BucketItem;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
+public interface BucketItemRepository extends ReactiveCrudRepository<BucketItem, Long> {
+    Mono<BucketItem> findBucketItemByBucketId(Long bucketId);
 
-public interface BucketItemRepository extends JpaRepository<BucketItem, Long> {
-
-
-
-
+    Flux<BucketItem> findAllByBucketId(Long bucketid);
 
 
 }

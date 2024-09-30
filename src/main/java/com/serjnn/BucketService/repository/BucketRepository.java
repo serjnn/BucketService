@@ -1,14 +1,14 @@
 package com.serjnn.BucketService.repository;
 
 import com.serjnn.BucketService.models.Bucket;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Optional;
 
-public interface BucketRepository extends JpaRepository<Bucket, Long> {
+public interface BucketRepository extends ReactiveCrudRepository<Bucket, Long> {
 
-    Optional<Bucket> findBucketByClientId(Long clientId);
+    Mono<Bucket> findBucketByClientId(Long clientId);
 
 
 }

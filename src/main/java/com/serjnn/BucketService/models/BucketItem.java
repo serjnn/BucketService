@@ -1,42 +1,36 @@
 package com.serjnn.BucketService.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "bucket_item")
 @NoArgsConstructor
+@Table("bucket_item")
 public class BucketItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bucket_id")
-    @JsonIgnore
-    private Bucket bucket;
+    private Long bucketId;
 
     private Long productId;
 
     private int quantity;
 
-    public BucketItem(Long productId, int quantity, Bucket bucket) {
+    public BucketItem(Long productId, int quantity, Long bucketId) {
         this.productId = productId;
         this.quantity = quantity;
-        this.bucket = bucket;
+        this.bucketId = bucketId;
     }
 
     @Override
     public String toString() {
         return "BucketItem{" +
                 "id=" + id +
-                ", bucket_id=" + bucket.getId() +
+                ", bucketId=" + bucketId +
                 ", productId=" + productId +
                 ", quantity=" + quantity +
                 '}';
