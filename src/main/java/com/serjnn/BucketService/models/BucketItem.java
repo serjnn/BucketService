@@ -20,7 +20,7 @@ public class BucketItem {
 
     private int quantity;
 
-    public BucketItem(Long productId, int quantity, Long bucketId) {
+    public BucketItem( Long bucketId, Long productId, int quantity) {
         this.productId = productId;
         this.quantity = quantity;
         this.bucketId = bucketId;
