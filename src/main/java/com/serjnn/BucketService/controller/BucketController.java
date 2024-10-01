@@ -23,8 +23,8 @@ public class BucketController {
     }
 
     @GetMapping("/remove/{clientId}/{productId}")
-    void remove(@PathVariable("clientId") Long clientId, @PathVariable("productId") Long productId) {
-        bucketService.removeProductFromBucket(clientId, productId);
+    Mono<Void> remove(@PathVariable("clientId") Long clientId, @PathVariable("productId") Long productId) {
+        return bucketService.removeProductFromBucket(clientId, productId);
 
     }
 

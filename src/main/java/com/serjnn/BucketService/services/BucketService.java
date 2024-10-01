@@ -52,28 +52,23 @@ public class BucketService {
                                     .retrieve()
                                     .bodyToMono(new ParameterizedTypeReference<List<ProductDto>>() {
                                     })
-                                    .flatMapMany(productDtos -> {
-                                        System.out.println("Received products: " + productDtos);
-
-                                        return mapToCompleteProducts(bucketItemService.findAllByBucketId
-                                                (bucket.getId()), productDtos);
-                                    });
+                                    .flatMapMany(productDtos ->
+                                            mapToCompleteProducts(bucketItemService.findAllByBucketId
+                                            (bucket.getId()), productDtos));
                         }));
     }
 
 
     private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems, List<ProductDto> productDtos) {
-        return bucketItems.collectList().flatMapMany(items -> {
-            return Flux.fromIterable(productDtos)
-                    .flatMap(product -> getQuantity(product.getId(), items)
-                            .map(quantity ->
-                                    new CompleteProduct(product.getId(),
-                                            quantity,
-                                            product.getName(),
-                                            product.getDescription(),
-                                            product.getPrice(),
-                                            product.getCategory())));
-        });
+        return bucketItems.collectList().flatMapMany(items -> Flux.fromIterable(productDtos)
+                .flatMap(product -> getQuantity(product.getId(), items)
+                        .map(quantity ->
+                                new CompleteProduct(product.getId(),
+                                        quantity,
+                                        product.getName(),
+                                        product.getDescription(),
+                                        product.getPrice(),
+                                        product.getCategory()))));
     }
 
 
@@ -98,64 +93,57 @@ public class BucketService {
 
     }
 
-    public Mono<Void> save(Bucket bucket) {
+    private Mono<Void> save(Bucket bucket) {
         return bucketRepository.save(bucket).then();
     }
 
 
     public Mono<Void> restore(OrderDTO orderDTO) {
         return findBucketByClientId(orderDTO.getClientID())
-                .flatMap(bucket -> {
-
-                    return Flux.fromIterable(orderDTO.getItems())
-                            .map(item -> new BucketItem(bucket.getId(), item.getId(), item.getQuantity()))
-                            .collectList()
-                            .flatMap(bucketItemService::addAll);
-                });
+                .flatMap(bucket -> Flux.fromIterable(orderDTO.getItems())
+                        .map(item -> new BucketItem(bucket.getId(), item.getId(), item.getQuantity()))
+                        .collectList()
+                        .flatMap(bucketItemService::addAll));
     }
 
 
     public Mono<Void> addProduct(Long clientId, Long productId) {
         return findBucketByClientId(clientId)
-                .flatMap(bucket -> {
-                    return bucketItemService.findAllByBucketId(bucket.getId())
-                            .filter(bucketItem -> Objects.equals(bucketItem.getProductId(), productId))
-                            .next()
-                            .flatMap(existingBucketItem -> {
-                                existingBucketItem.setQuantity(existingBucketItem.getQuantity() + 1);
-                                return bucketItemService.save(existingBucketItem).then(Mono.just(bucket));
-                            })
-                            .switchIfEmpty(Mono.defer(() -> {
-                                BucketItem bucketItem = new BucketItem(bucket.getId(), productId, 1);
-                                return bucketItemService.save(bucketItem)
-                                        .then(Mono.just(bucket));
-                            }))
-                            .flatMap(this::save);
-                });
+                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
+                        .filter(bucketItem -> Objects.equals(bucketItem.getProductId(), productId))
+                        .next()
+                        .flatMap(existingBucketItem -> {
+                            existingBucketItem.setQuantity(existingBucketItem.getQuantity() + 1);
+                            return bucketItemService.save(existingBucketItem).then(Mono.just(bucket));
+                        })
+                        .switchIfEmpty(Mono.defer(() -> {
+                            BucketItem bucketItem = new BucketItem(bucket.getId(), productId, 1);
+                            return bucketItemService.save(bucketItem)
+                                    .then(Mono.just(bucket));
+                        }))
+                        .flatMap(this::save));
     }
 
 
     public Mono<Void> removeProductFromBucket(Long clientId, Long productId) {
         return findBucketByClientId(clientId)
-                .flatMap(bucket -> {
-                    return bucketItemService.findAllByBucketId(bucket.getId())
-                            .filter(item -> item.getProductId().equals(productId))
-                            .next()
-                            .flatMap(existingBucketItem -> {
-                                System.out.println("Found product in bucket: " + existingBucketItem);
+                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
+                        .filter(item -> item.getProductId().equals(productId))
+                        .next()
+                        .flatMap(existingBucketItem -> {
 
-                                if (existingBucketItem.getQuantity() > 0) {
-                                    existingBucketItem.setQuantity(existingBucketItem.getQuantity() - 1);
 
-                                    if (existingBucketItem.getQuantity() == 0) {
-                                        return bucketItemService.deleteOne(existingBucketItem.getId());
-                                    } else {
-                                        return bucketItemService.save(existingBucketItem);
-                                    }
+                            if (existingBucketItem.getQuantity() > 0) {
+                                existingBucketItem.setQuantity(existingBucketItem.getQuantity() - 1);
+
+                                if (existingBucketItem.getQuantity() == 0) {
+                                    return bucketItemService.deleteOne(existingBucketItem.getId());
+                                } else {
+                                    return bucketItemService.save(existingBucketItem);
                                 }
-                                return Mono.empty(); // Do nothing if the item doesn't exist or has quantity 0
-                            });
-                });
+                            }
+                            return Mono.empty();
+                        }));
     }
 
 
@@ -165,15 +153,10 @@ public class BucketService {
 
     public Mono<Void> clear(Long clientID) {
         return findBucketByClientId(clientID)
-                .flatMap(bucket -> {
-                    return
-                            bucketItemService.findAllByBucketId(bucket.getId())
-                                    .collectList()
-                                    .flatMap(bucketItemService::deleteAll);
-
-
-                })
-                .then();
+                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
+                        .collectList()
+                        .flatMap(bucketItemService::deleteAll));
+                //.then();
 
     }
 }
