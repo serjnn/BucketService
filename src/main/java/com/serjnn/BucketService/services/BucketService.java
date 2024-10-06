@@ -52,15 +52,15 @@ public class BucketService {
                                     .retrieve()
                                     .bodyToMono(new ParameterizedTypeReference<List<ProductDto>>() {
                                     })
-                                    .flatMapMany(productDtos ->
+                                    .flatMapMany(productDto ->
                                             mapToCompleteProducts(bucketItemService.findAllByBucketId
-                                            (bucket.getId()), productDtos));
+                                            (bucket.getId()), productDto));
                         }));
     }
 
 
-    private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems, List<ProductDto> productDtos) {
-        return bucketItems.collectList().flatMapMany(items -> Flux.fromIterable(productDtos)
+    private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems, List<ProductDto> productDto) {
+        return bucketItems.collectList().flatMapMany(items -> Flux.fromIterable(productDto)
                 .flatMap(product -> getQuantity(product.getId(), items)
                         .map(quantity ->
                                 new CompleteProduct(product.getId(),

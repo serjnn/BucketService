@@ -10,7 +10,7 @@ import java.util.List;
 public interface BucketItemRepository extends ReactiveCrudRepository<BucketItem, Long> {
     Mono<BucketItem> findBucketItemByBucketId(Long bucketId);
 
-    Flux<BucketItem> findAllByBucketId(Long bucketid);
+    Flux<BucketItem> findAllByBucketId(Long bucketId);
 
     Mono<Void> deleteAll(List<BucketItem> items);
 
