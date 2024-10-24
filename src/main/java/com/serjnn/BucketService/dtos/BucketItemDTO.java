@@ -8,7 +8,10 @@ import java.math.BigDecimal;
 public class BucketItemDTO {
 
     private Long id;
+
     private String name;
+
     private Integer quantity;
+
     private BigDecimal price;
 }

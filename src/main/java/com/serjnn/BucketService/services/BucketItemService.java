@@ -14,9 +14,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BucketItemService {
     private  final BucketItemRepository bucketItemRepository;
-    public Mono<BucketItem> findBucketItemByBucketId(Long bucketId){
-        return bucketItemRepository.findBucketItemByBucketId(bucketId);
-    }
 
     public Flux<BucketItem> findAllByBucketId(Long bucketId){
         return bucketItemRepository.findAllByBucketId(bucketId);
