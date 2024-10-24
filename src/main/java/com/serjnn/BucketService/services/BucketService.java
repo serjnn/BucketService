@@ -6,6 +6,7 @@ import com.serjnn.BucketService.dtos.ProductDto;
 import com.serjnn.BucketService.models.Bucket;
 import com.serjnn.BucketService.models.BucketItem;
 import com.serjnn.BucketService.repository.BucketRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,22 +19,11 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
-
+@RequiredArgsConstructor
 public class BucketService {
     private final BucketRepository bucketRepository;
-
     private final WebClient.Builder webClientBuilder;
-
     private final BucketItemService bucketItemService;
-
-    public BucketService(BucketRepository bucketRepository,
-                         WebClient.Builder webClientBuilder,
-                         BucketItemService bucketItemService) {
-        this.bucketRepository = bucketRepository;
-        this.webClientBuilder = webClientBuilder;
-        this.bucketItemService = bucketItemService;
-    }
-
 
     public Flux<CompleteProduct> getCompleteProducts(Long clientId) {
         return findBucketByClientId(clientId)
@@ -47,14 +37,14 @@ public class BucketService {
 
                             return webClientBuilder.build()
                                     .post()
-                                    .uri("lb://product/api/v1/by-ids")
+                                    .uri("lb://product/api/v1/all/by-ids")
                                     .bodyValue(requestBody)
                                     .retrieve()
                                     .bodyToMono(new ParameterizedTypeReference<List<ProductDto>>() {
                                     })
                                     .flatMapMany(productDto ->
-                                            mapToCompleteProducts(bucketItemService.findAllByBucketId
-                                            (bucket.getId()), productDto));
+                                            mapToCompleteProducts(bucketItemService
+                                                    .findAllByBucketId(bucket.getId()), productDto));
                         }));
     }
 
@@ -156,7 +146,6 @@ public class BucketService {
                 .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
                         .collectList()
                         .flatMap(bucketItemService::deleteAll));
-                //.then();
 
     }
 }
