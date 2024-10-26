@@ -13,9 +13,7 @@ public class OrderDTO {
 
     private Long clientID;
 
-
     private List<BucketItemDTO> items;
-
 
     private BigDecimal totalSum;
 

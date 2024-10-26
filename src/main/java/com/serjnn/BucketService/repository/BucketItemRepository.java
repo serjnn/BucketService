@@ -8,7 +8,6 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface BucketItemRepository extends ReactiveCrudRepository<BucketItem, Long> {
-    Mono<BucketItem> findBucketItemByBucketId(Long bucketId);
 
     Flux<BucketItem> findAllByBucketId(Long bucketId);
 
