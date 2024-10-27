@@ -50,7 +50,9 @@ public class BucketService {
 
 
     private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems, List<ProductDto> productDto) {
-        return bucketItems.collectList().flatMapMany(items -> Flux.fromIterable(productDto)
+        return bucketItems
+                .collectList()
+                .flatMapMany(items -> Flux.fromIterable(productDto)
                 .flatMap(product -> getQuantity(product.getId(), items)
                         .map(quantity ->
                                 new CompleteProduct(product.getId(),
@@ -121,8 +123,6 @@ public class BucketService {
                         .filter(item -> item.getProductId().equals(productId))
                         .next()
                         .flatMap(existingBucketItem -> {
-
-
                             if (existingBucketItem.getQuantity() > 0) {
                                 existingBucketItem.setQuantity(existingBucketItem.getQuantity() - 1);
 
