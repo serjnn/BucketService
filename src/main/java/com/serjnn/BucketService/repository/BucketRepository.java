@@ -9,4 +9,6 @@ public interface BucketRepository extends ReactiveCrudRepository<Bucket, Long> {
     Mono<Bucket> findBucketByClientId(Long clientId);
 
 
+
+
 }

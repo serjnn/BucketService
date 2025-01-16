@@ -13,12 +13,11 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("bucket")
 public class Bucket {
     @Id
-    private Long id;
+    private long id;
 
-    private Long clientId;
+    private long clientId;
 
-
-    public Bucket(Long clientId) {
+    public Bucket(long clientId) {
         this.clientId = clientId;
     }
 }

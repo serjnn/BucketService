@@ -15,31 +15,32 @@ public class BucketController {
 
     private final BucketService bucketService;
 
-
-    @GetMapping("/add/{clientId}/{productId}")
-    Mono<Void> add(@PathVariable("clientId") Long clientId, @PathVariable("productId") Long productId) {
+    @GetMapping("/addProduct/{clientId}/{productId}")
+    Mono<Void> add(@PathVariable("clientId") long clientId,
+                   @PathVariable("productId") long productId) {
         return bucketService.addProduct(clientId, productId);
 
     }
 
-    @GetMapping("/remove/{clientId}/{productId}")
-    Mono<Void> remove(@PathVariable("clientId") Long clientId, @PathVariable("productId") Long productId) {
+    @GetMapping("/removeProduct/{clientId}/{productId}")
+    Mono<Void> remove(@PathVariable long clientId,
+                      @PathVariable long productId) {
         return bucketService.removeProductFromBucket(clientId, productId);
 
     }
 
     @GetMapping("/getCompleteBucket/{clientId}")
-    Flux<CompleteProduct> complete(@PathVariable("clientId") Long clientId) {
+    Flux<CompleteProduct> complete(@PathVariable("clientId") long clientId) {
         return bucketService.getCompleteProducts(clientId);
     }
 
 
-    @PostMapping("/clear")
-    Mono<Void> clear(@RequestBody Long clientId) {
-        return bucketService.clear(clientId);
+    @PostMapping("/clearBucket")
+    Mono<Void> clear(@RequestBody long clientId) {
+        return bucketService.clearBucket(clientId);
     }
 
-    @PostMapping("/restore")
+    @PostMapping("/restoreBucket")
     Mono<Void> restore(@RequestBody OrderDTO orderDTO) {
         return bucketService.restore(orderDTO);
     }
