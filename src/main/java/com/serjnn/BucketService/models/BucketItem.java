@@ -12,12 +12,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("bucket_item")
 public class BucketItem {
     @Id
-    private Long id;
-
-    private Long bucketId;
-
-    private Long productId;
-
+    private long id;
+    private long bucketId;
+    private long productId;
     private int quantity;
 
     public BucketItem( Long bucketId, Long productId, int quantity) {

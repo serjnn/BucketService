@@ -11,7 +11,7 @@ public class OrderDTO {
 
     private UUID orderId;
 
-    private Long clientID;
+    private long clientId;
 
     private List<BucketItemDTO> items;
 

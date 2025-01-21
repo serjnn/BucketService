@@ -7,11 +7,8 @@ import java.math.BigDecimal;
 @Getter
 public class BucketItemDTO {
 
-    private Long id;
-
+    private long id;
     private String name;
-
-    private Integer quantity;
-
+    private int quantity;
     private BigDecimal price;
 }

@@ -13,5 +13,7 @@ public interface BucketItemRepository extends ReactiveCrudRepository<BucketItem,
 
     Mono<Void> deleteAll(List<BucketItem> items);
 
+    Mono<BucketItem> findByBucketId(long bucketId);
+
 
 }

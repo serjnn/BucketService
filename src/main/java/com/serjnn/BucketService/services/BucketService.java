@@ -5,6 +5,7 @@ import com.serjnn.BucketService.dtos.OrderDTO;
 import com.serjnn.BucketService.dtos.ProductDto;
 import com.serjnn.BucketService.models.Bucket;
 import com.serjnn.BucketService.models.BucketItem;
+import com.serjnn.BucketService.repository.BucketItemRepository;
 import com.serjnn.BucketService.repository.BucketRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
@@ -23,11 +24,11 @@ import java.util.Objects;
 public class BucketService {
     private final BucketRepository bucketRepository;
     private final WebClient.Builder webClientBuilder;
-    private final BucketItemService bucketItemService;
+    private final BucketItemRepository bucketItemRepository;
 
-    public Flux<CompleteProduct> getCompleteProducts(Long clientId) {
+    public Flux<CompleteProduct> getCompleteProducts(long clientId) {
         return findBucketByClientId(clientId)
-                .flatMapMany(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
+                .flatMapMany(bucket -> bucketItemRepository.findAllByBucketId(bucket.getId())
                         .map(BucketItem::getProductId)
                         .collectList()
                         .flatMapMany(productIds -> {
@@ -43,17 +44,18 @@ public class BucketService {
                                     .bodyToMono(new ParameterizedTypeReference<List<ProductDto>>() {
                                     })
                                     .flatMapMany(productDto ->
-                                            mapToCompleteProducts(bucketItemService
+                                            mapToCompleteProducts(bucketItemRepository
                                                     .findAllByBucketId(bucket.getId()), productDto));
                         }));
     }
 
 
-    private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems, List<ProductDto> productDto) {
+    private Flux<CompleteProduct> mapToCompleteProducts(Flux<BucketItem> bucketItems,
+                                                        List<ProductDto> productDto) {
         return bucketItems
                 .collectList()
                 .flatMapMany(items -> Flux.fromIterable(productDto)
-                .flatMap(product -> getQuantity(product.getId(), items)
+                .flatMap(product -> getProductQuantity(product.getId(), items)
                         .map(quantity ->
                                 new CompleteProduct(product.getId(),
                                         quantity,
@@ -64,7 +66,7 @@ public class BucketService {
     }
 
 
-    private Mono<Integer> getQuantity(Long id, List<BucketItem> bucketItem) {
+    private Mono<Integer> getProductQuantity(long id, List<BucketItem> bucketItem) {
         return Flux.fromIterable(bucketItem)
                 .filter(bucketItem2 -> Objects.equals(bucketItem2.getProductId(), id))
                 .next()
@@ -73,12 +75,12 @@ public class BucketService {
 
     }
 
-    private Mono<Bucket> findBucketByClientId(Long clientId) {
+    private Mono<Bucket> findBucketByClientId(long clientId) {
         return bucketRepository.findBucketByClientId(clientId)
                 .switchIfEmpty(createBucketForClient(clientId));
     }
 
-    private Mono<Bucket> createBucketForClient(Long clientId) {
+    private Mono<Bucket> createBucketForClient(long clientId) {
         Bucket bucket = new Bucket(clientId);
         return save(bucket)
                 .then(Mono.just(bucket));
@@ -91,61 +93,56 @@ public class BucketService {
 
 
     public Mono<Void> restore(OrderDTO orderDTO) {
-        return findBucketByClientId(orderDTO.getClientID())
+        return findBucketByClientId(orderDTO.getClientId())
                 .flatMap(bucket -> Flux.fromIterable(orderDTO.getItems())
                         .map(item -> new BucketItem(bucket.getId(), item.getId(), item.getQuantity()))
                         .collectList()
-                        .flatMap(bucketItemService::addAll));
+                        .flatMap(bucketItems -> bucketItemRepository
+                                .saveAll(bucketItems)
+                                .then()));
     }
 
 
-    public Mono<Void> addProduct(Long clientId, Long productId) {
+    public Mono<Void> addProduct(long clientId, long productId) {
         return findBucketByClientId(clientId)
-                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
-                        .filter(bucketItem -> Objects.equals(bucketItem.getProductId(), productId))
-                        .next()
+                .flatMap(bucket -> bucketItemRepository.findByBucketId(bucket.getId())
                         .flatMap(existingBucketItem -> {
                             existingBucketItem.setQuantity(existingBucketItem.getQuantity() + 1);
-                            return bucketItemService.save(existingBucketItem).then(Mono.just(bucket));
+                            return bucketItemRepository.save(existingBucketItem).then(Mono.just(bucket));
                         })
                         .switchIfEmpty(Mono.defer(() -> {
                             BucketItem bucketItem = new BucketItem(bucket.getId(), productId, 1);
-                            return bucketItemService.save(bucketItem)
+                            return bucketItemRepository.save(bucketItem)
                                     .then(Mono.just(bucket));
                         }))
                         .flatMap(this::save));
     }
 
 
-    public Mono<Void> removeProductFromBucket(Long clientId, Long productId) {
+    public Mono<Void> removeProductFromBucket(long clientId, long productId) {
         return findBucketByClientId(clientId)
-                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
-                        .filter(item -> item.getProductId().equals(productId))
+                .flatMap(bucket -> bucketItemRepository.findAllByBucketId(bucket.getId())
+                        .filter(item -> item.getProductId() == productId)
                         .next()
                         .flatMap(existingBucketItem -> {
                             if (existingBucketItem.getQuantity() > 0) {
                                 existingBucketItem.setQuantity(existingBucketItem.getQuantity() - 1);
 
                                 if (existingBucketItem.getQuantity() == 0) {
-                                    return bucketItemService.deleteOne(existingBucketItem.getId());
+                                    return bucketItemRepository.deleteById(existingBucketItem.getId());
                                 } else {
-                                    return bucketItemService.save(existingBucketItem);
+                                    return bucketItemRepository.save(existingBucketItem).then();
                                 }
                             }
                             return Mono.empty();
                         }));
     }
 
-
-
-
-
-
-    public Mono<Void> clear(Long clientID) {
+    public Mono<Void> clearBucket(long clientID) {
         return findBucketByClientId(clientID)
-                .flatMap(bucket -> bucketItemService.findAllByBucketId(bucket.getId())
+                .flatMap(bucket -> bucketItemRepository.findAllByBucketId(bucket.getId())
                         .collectList()
-                        .flatMap(bucketItemService::deleteAll));
+                        .flatMap(bucketItemRepository::deleteAll));
 
     }
 }
